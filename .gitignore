@@ -1,0 +1,7 @@
+/venv*
+/data/
+/*bk
+/*.auth
+/*.clcs
+/test*
+/result*
