@@ -112,17 +112,17 @@ def vector_cosine(text1, text2, lemmatize=False):
 
     # Create the TF-IDF vectors
     vectorizer = TfidfVectorizer()
-    vector1 = vectorizer.fit_transform(tokens1)
-    vector2 = vectorizer.transform(tokens2)
+    vectorizer.fit(tokens1+tokens2)
 
-    print(vector1)
-    print("")
-    print(vector2)
+    vector1 = vectorizer.transform(tokens1)
+    vector2 = vectorizer.transform(tokens2)
+    vector1 = np.asarray(vector1.sum(axis=0)[0])
+    vector2 = np.asarray(vector2.sum(axis=0)[0])
 
     # Calculate the cosine similarity
     similarity = cosine_similarity(vector1, vector2)
 
-    return similarity
+    return similarity[0][0]
 
 
 def bert_vector_cosine(text1, text2):
