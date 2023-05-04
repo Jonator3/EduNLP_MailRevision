@@ -38,7 +38,7 @@ def levenshtein_distance(token1, token2):
                 else:
                     distances[t1][t2] = c + 1
 
-    return distances[len(token1)][len(token2)]
+    return int(distances[len(token1)][len(token2)])
 
 
 def token_levenshtein_distance(text1, text2, lemmatize=False):
