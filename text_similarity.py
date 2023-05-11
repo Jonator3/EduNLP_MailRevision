@@ -9,6 +9,11 @@ import transformers
 import gst_calculation
 
 
+def length_difference(text1, text2):
+    diff = abs(len(text1) - len(text2))
+    return diff, diff/max(len(text1), len(text2))
+
+
 def levenshtein_distance(token1, token2):
     distances = np.zeros((len(token1) + 1, len(token2) + 1))
 
@@ -38,7 +43,8 @@ def levenshtein_distance(token1, token2):
                 else:
                     distances[t1][t2] = c + 1
 
-    return int(distances[len(token1)][len(token2)])
+    out = int(distances[len(token1)][len(token2)])
+    return out, out/max(len(token1), len(token2))
 
 
 def token_levenshtein_distance(text1, text2, lemmatize=False):
@@ -65,7 +71,7 @@ def longest_common_substring(text1, text2):
         for i2 in range(len(text2)):
             l = __equal_till(text1[i1:], text2[i2:])
             lcs = max(lcs, l)
-    return lcs
+    return lcs, lcs/max(len(text1), len(text2))
 
 
 def longest_common_tokensubstring(text1, text2, lemmatize=False):
@@ -81,7 +87,7 @@ def longest_common_tokensubstring(text1, text2, lemmatize=False):
 
 def gst(text1, text2, minmatch=3):
     _, score = gst_calculation.gst.calculate(text1, text2, minimal_match=minmatch)
-    return score
+    return score, score/max(len(text1), len(text2))
 
 
 def token_gst(text1, text2, minmatch=3, lemmatize=False):
@@ -122,7 +128,7 @@ def vector_cosine(text1, text2, lemmatize=False):
     # Calculate the cosine similarity
     similarity = cosine_similarity(vector1, vector2)
 
-    return similarity[0][0]
+    return similarity[0][0], similarity[0][0]
 
 
 def bert_vector_cosine(text1, text2):
@@ -135,4 +141,4 @@ def bert_vector_cosine(text1, text2):
 
     # Calculate the cosine similarity between the embeddings
     similarity = np.dot(encoding1, encoding2) / (np.linalg.norm(encoding1) * np.linalg.norm(encoding2))
-    return similarity
+    return similarity, similarity

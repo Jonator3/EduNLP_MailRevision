@@ -17,7 +17,7 @@ def __run_alg(name, alg):
         if text1 == "" or text2 == "":
             out .append(None)
             continue
-        out.append(alg(text1, text2))
+        out.append(alg(text1, text2)[1])
 
     out_df = pd.DataFrame({"id": ids, name: out})
     return out_df

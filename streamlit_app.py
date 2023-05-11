@@ -6,7 +6,7 @@ import data_manager as dm
 
 
 scores = {
-    "Length difference": lambda x, y: abs(len(x)-len(y)),
+    "Length difference": text_similarity.length_difference,
     "char lcs": text_similarity.longest_common_substring,
     "token lcs": text_similarity.longest_common_tokensubstring,
     "char gst": text_similarity.gst,
@@ -46,8 +46,10 @@ if __name__ == "__main__":
     # handle input
     if st.button('Compare'):
         names = list(scores.keys())
-        values = [str(round(scores.get(name)(text1, text2), 3)) for name in names]
-        df = pd.DataFrame({"Measure": names, "Value": values})
+        vals = [scores.get(name)(text1, text2) for name in names]
+        values = [round(v[0], 3) for v in vals]
+        n_values = [round(v[1], 3) for v in vals]
+        df = pd.DataFrame({"Measure": names, "Value": values, "Normalized-Value": n_values})
         st.write(df)
 
     if btn_load_next:
