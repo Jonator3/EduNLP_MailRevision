@@ -87,12 +87,35 @@ def longest_common_tokensubstring(text1, text2, lemmatize=False):
     return longest_common_substring(tokens1, tokens2)
 
 
-def gst(text1, text2, minmatch=3):
-    _, score = gst_calculation.gst.calculate(text1, text2, minimal_match=minmatch)
-    return score, score/max(len(text1), len(text2))
+def gst(string1, string2):
+    length1 = len(string1)
+    length2 = len(string2)
+
+    # Initialize a 2D array to store the match lengths
+    match_lengths = [[0] * (length2 + 1) for _ in range(length1 + 1)]
+
+    # Variables to keep track of the longest match
+    longest_match_length = 0
+    longest_match_end = 0
+
+    # Iterate over each character in string1
+    for i in range(length1):
+        # Iterate over each character in string2
+        for j in range(length2):
+            # If the characters match
+            if string1[i] == string2[j]:
+                # Increment the match length by 1
+                match_lengths[i + 1][j + 1] = match_lengths[i][j] + 1
+
+                # Check if this match is longer than the previous longest match
+                if match_lengths[i + 1][j + 1] > longest_match_length:
+                    longest_match_length = match_lengths[i + 1][j + 1]
+                    longest_match_end = i + 1
+
+    return longest_match_length, longest_match_length/max(len(string1), len(string2))
 
 
-def token_gst(text1, text2, minmatch=3, lemmatize=False):
+def token_gst(text1, text2, lemmatize=False):
     # Tokenize and lemmatize the texts
     tokens1 = word_tokenize(text1)
     tokens2 = word_tokenize(text2)
@@ -101,7 +124,7 @@ def token_gst(text1, text2, minmatch=3, lemmatize=False):
         tokens1 = [lemmatizer.lemmatize(token) for token in tokens1]
         tokens2 = [lemmatizer.lemmatize(token) for token in tokens2]
 
-    return gst(tokens1, tokens2, minmatch)
+    return gst(tokens1, tokens2)
 
 
 def vector_cosine(text1, text2, lemmatize=False):
