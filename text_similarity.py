@@ -7,6 +7,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import transformers
 import gst_calculation
+import torch
+from pytorch_pretrained_bert import BertTokenizer, BertModel
 
 
 def length_difference(text1, text2):
@@ -131,14 +133,37 @@ def vector_cosine(text1, text2, lemmatize=False):
     return similarity[0][0], similarity[0][0]
 
 
+def vectorize_with_bert(text):
+    # Load the BERT model and tokenizer
+    model_name = 'bert-base-uncased'  # Pre-trained BERT model name
+    tokenizer = BertTokenizer.from_pretrained(model_name)
+    model = BertModel.from_pretrained(model_name)
+
+    # Tokenize the input text
+    tokens = tokenizer.tokenize(text)
+    token_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+    # Convert the token IDs to PyTorch tensors
+    input_ids = torch.tensor([token_ids])
+
+    # Set the model to evaluation mode
+    model.eval()
+
+    # Vectorize the input text using BERT
+    with torch.no_grad():
+        encoded_layers, _ = model(input_ids)
+
+    # Get the vector representation from the last BERT layer
+    vectorized_text = encoded_layers[-1].squeeze(0)
+
+    return vectorized_text
+
+
 def bert_vector_cosine(text1, text2):
-    # Load the BERT model
-    model = transformers.BertModel.from_pretrained('bert-base-uncased')
+    vector1 = vectorize_with_bert(text1)
+    vector2 = vectorize_with_bert(text2)
 
-    # Tokenize and encode the texts
-    encoding1 = model.encode(text1, max_length=512)
-    encoding2 = model.encode(text2, max_length=512)
+    # Calculate the cosine similarity
+    similarity = cosine_similarity(vector1, vector2)
 
-    # Calculate the cosine similarity between the embeddings
-    similarity = np.dot(encoding1, encoding2) / (np.linalg.norm(encoding1) * np.linalg.norm(encoding2))
-    return similarity, similarity
+    return similarity[0][0], similarity[0][0]

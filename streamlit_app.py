@@ -13,7 +13,8 @@ scores = {
     "token gst": text_similarity.token_gst,
     "char levenshtein": text_similarity.levenshtein_distance,
     "token levenshtein": text_similarity.token_levenshtein_distance,
-    "vektor cos": text_similarity.vector_cosine
+    "vektor cos": text_similarity.vector_cosine,
+    "Bert v-cos": text_similarity.bert_vector_cosine
 }
 
 
