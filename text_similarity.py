@@ -13,7 +13,7 @@ from pytorch_pretrained_bert import BertTokenizer, BertModel
 
 def length_difference(text1, text2):
     diff = abs(len(text1) - len(text2))
-    return diff, diff/max(len(text1), len(text2))
+    return diff, diff/max(len(text1), len(text2)), []
 
 
 def levenshtein_distance(token1, token2):
@@ -46,7 +46,7 @@ def levenshtein_distance(token1, token2):
                     distances[t1][t2] = c + 1
 
     out = int(distances[len(token1)][len(token2)])
-    return out, out/max(len(token1), len(token2))
+    return out, out/max(len(token1), len(token2)), []
 
 
 def token_levenshtein_distance(text1, text2, lemmatize=False):
@@ -69,11 +69,16 @@ def __equal_till(s1, s2):
 
 def longest_common_substring(text1, text2):
     lcs = 0
+    start_t1 = 0
+    start_t2 = 0
     for i1 in range(len(text1)):
         for i2 in range(len(text2)):
             l = __equal_till(text1[i1:], text2[i2:])
-            lcs = max(lcs, l)
-    return lcs, lcs/max(len(text1), len(text2))
+            if l > lcs:
+                lcs = l
+                start_t1 = i1
+                start_t2 = i2
+    return lcs, lcs/max(len(text1), len(text2)), [(0, start_t1, start_t1+lcs, 0), (1, start_t2, start_t2+lcs, 0)]
 
 
 def longest_common_tokensubstring(text1, text2, lemmatize=False):
@@ -96,7 +101,9 @@ def gst(string1, string2):
 
     # Variables to keep track of the longest match
     longest_match_length = 0
-    longest_match_end = 0
+
+    start_t1 = 0
+    start_t2 = 0
 
     # Iterate over each character in string1
     for i in range(length1):
@@ -110,9 +117,10 @@ def gst(string1, string2):
                 # Check if this match is longer than the previous longest match
                 if match_lengths[i + 1][j + 1] > longest_match_length:
                     longest_match_length = match_lengths[i + 1][j + 1]
-                    longest_match_end = i + 1
+                    start_t1 = i - longest_match_length
+                    start_t2 = j - longest_match_length
 
-    return longest_match_length, longest_match_length/max(len(string1), len(string2))
+    return longest_match_length, longest_match_length/max(len(string1), len(string2)), [(0, start_t1, start_t1+longest_match_length+1, 0), (1, start_t2, start_t2+longest_match_length+1, 0)]
 
 
 def token_gst(text1, text2, lemmatize=False):
@@ -153,7 +161,7 @@ def vector_cosine(text1, text2, lemmatize=False):
     # Calculate the cosine similarity
     similarity = cosine_similarity(vector1, vector2)
 
-    return similarity[0][0], similarity[0][0]
+    return similarity[0][0], similarity[0][0], []
 
 
 def vectorize_with_bert(text):
@@ -189,4 +197,4 @@ def bert_vector_cosine(text1, text2):
     # Calculate the cosine similarity
     similarity = cosine_similarity(vector1, vector2)
 
-    return similarity[0][0], similarity[0][0]
+    return similarity[0][0], similarity[0][0], []
