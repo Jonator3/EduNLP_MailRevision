@@ -38,6 +38,7 @@ if __name__ == "__main__":
     ids = [id for id in df["id"]]
 
     scores = {
+        "len-diff": text_similarity.length_difference,
         "char-lcs": text_similarity.longest_common_substring,
         "token-lcs": text_similarity.longest_common_tokensubstring,
         "char-gst": text_similarity.gst,
