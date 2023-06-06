@@ -22,10 +22,12 @@ colours = ["coral", "chartreuse", "orchid", "gold", "cornflowerblue", "lightseag
 
 if __name__ == "__main__":
     # load data
-    df = dm.load_csv("./data/FORMAT_Text1_Revision.csv", ";")
+    df = dm.load_csv("./data/FORMAT_1_Betreff_Text1_Revision.csv")
 
     first_texts = [m1 for m1 in df["Mail_1"]]
     second_texts = [m2 for m2 in df["Mail_2"]]
+    first_re = [b1 for b1 in df["Betreff_1"]]
+    second_re = [b2 for b2 in df["Betreff_2"]]
 
     # setup page
     st.set_page_config(layout='wide')
@@ -78,8 +80,8 @@ if __name__ == "__main__":
         st.session_state.text_index = st.session_state.text_index % len(first_texts)
         print("loading data with index:", st.session_state.text_index)
 
-        t1 = first_texts[st.session_state.text_index]
-        t2 = second_texts[st.session_state.text_index]
+        t1 = first_re[st.session_state.text_index] + ":\n" + first_texts[st.session_state.text_index]
+        t2 = second_re[st.session_state.text_index] + ":\n" + second_texts[st.session_state.text_index]
 
         st.session_state.text1 = t1
         st.session_state.text2 = t2

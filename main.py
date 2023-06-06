@@ -11,10 +11,10 @@ import text_similarity
 def __run_alg(name, alg):
     out = []
     for i in range(len(first_texts)):
-        text1 = first_texts[i]
-        text2 = second_texts[i]
+        text1 = first_re[i] + ":\n" + first_texts[i]
+        text2 = second_re[i] + ":\n" + second_texts[i]
 
-        if text1 == "" or text2 == "":
+        if text1 == ":\n" or text2 == ":\n":  # == if one Text is empty
             out .append(None)
             continue
         out.append(alg(text1, text2)[1])
@@ -29,8 +29,10 @@ if __name__ == "__main__":
     nltk.download('stopwords')
 
     # load data
-    df = dm.load_csv("./data/FORMAT_Text1_Revision.csv", ";")
+    df = dm.load_csv("./data/FORMAT_1_Betreff_Text1_Revision.csv")
 
+    first_re = [b1 for b1 in df["Betreff_1"]]
+    second_re = [b2 for b2 in df["Betreff_2"]]
     first_texts = [m1 for m1 in df["Mail_1"]]
     second_texts = [m2 for m2 in df["Mail_2"]]
     ids = [id for id in df["id"]]
