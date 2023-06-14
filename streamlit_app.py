@@ -60,13 +60,29 @@ if __name__ == "__main__":
         df = pd.DataFrame({"Measure": names, "Value": values, "Normalized-Value": n_values})
         st.write(df)
         marker_index = list(scores.keys()).index(marker)
-        t1 = text1
-        t2 = text2
-        for ti, s, e, c in vals[marker_index][2]:
-            if ti == 0:
-                t1 = t1[:s] + "<span style=\"border-radius: 25px; padding-left:10px; padding-right:10px; background-color: " + colours[c] + "\">" + t1[s:e] + "</span>" + t1[e:]
-            else:
-                t2 = t2[:s] + "<span style=\"border-radius: 25px; padding-left:10px; padding-right:10px; background-color: " + colours[c] + "\">" + t2[s:e] + "</span>" + t2[e:]
+        t1 = ""
+        t2 = ""
+        markings = vals[marker_index][2]
+
+        for i, C in enumerate(text1):
+            starts = [c for ti, s, e, c in markings if ti == 0 and s == i]
+            if len(starts) > 0:
+                t1 += "<span style=\"border-radius: 5px; padding-left:1px; padding-right:1px; margin-right:3px; margin-left:3px; background-color: " + colours[starts[0]] + "\">"
+
+            t1 += C
+
+            if len([c for ti, s, e, c in markings if ti == 0 and e == i]) > 0:
+                t1 += "</span>"
+
+        for i, C in enumerate(text2):
+            starts = [c for ti, s, e, c in markings if ti == 1 and s == i]
+            if len(starts) > 0:
+                t2 += "<span style=\"border-radius: 5px; padding-left:1px; padding-right:1px; margin-right:3px; margin-left:3px; background-color: " + colours[starts[0]] + "\">"
+
+            if len([c for ti, s, e, c in markings if ti == 1 and e == i]) > 0:
+                t2 += "</span>"
+
+            t2 += C
 
         st.write("\n\n")
         st.markdown("**Test 1:**")

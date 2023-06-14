@@ -93,34 +93,16 @@ def longest_common_tokensubstring(text1, text2, lemmatize=False):
 
 
 def gst(string1, string2):
-    length1 = len(string1)
-    length2 = len(string2)
+    res = gst_calculation.gst.calculate(string1, string2)
+    length = res[-1]
+    marking = []
+    for section in res[0]:
+        t1 = section.get("token_1_position")
+        t2 = section.get("token_2_position")
+        marking.append((0, t1, t1+section.get("length"), 0))
+        marking.append((1, t2, t2+section.get("length"), 0))
 
-    # Initialize a 2D array to store the match lengths
-    match_lengths = [[0] * (length2 + 1) for _ in range(length1 + 1)]
-
-    # Variables to keep track of the longest match
-    longest_match_length = 0
-
-    start_t1 = 0
-    start_t2 = 0
-
-    # Iterate over each character in string1
-    for i in range(length1):
-        # Iterate over each character in string2
-        for j in range(length2):
-            # If the characters match
-            if string1[i] == string2[j]:
-                # Increment the match length by 1
-                match_lengths[i + 1][j + 1] = match_lengths[i][j] + 1
-
-                # Check if this match is longer than the previous longest match
-                if match_lengths[i + 1][j + 1] > longest_match_length:
-                    longest_match_length = match_lengths[i + 1][j + 1]
-                    start_t1 = i - longest_match_length
-                    start_t2 = j - longest_match_length
-
-    return longest_match_length, longest_match_length/max(len(string1), len(string2)), [(0, start_t1, start_t1+longest_match_length+1, 0), (1, start_t2, start_t2+longest_match_length+1, 0)]
+    return length, length/max(len(string1), len(string2)), marking
 
 
 def token_gst(text1, text2, lemmatize=False):
