@@ -21,12 +21,13 @@ scores = {
 colours = ["#009900", "#990000", "#000099", "gold", "cornflowerblue", "lightseagreen", "mediumpurple"]
 
 
-def marked_text(text: str, markings: List[Tuple[int, int, str]]):
+def marked_text(text: str, markings: List[Tuple[int, int, str]], unify=False):
     """
     This function marks a Text with html notation.
 
     :param text: The Text string that the marks get added to.
     :param markings: A List of (start:int, end:int, colour:str)-Tuples indicating what should be marked.
+    :param unify: a boolean stating if two adjacent markings with same colour should be joined (for cleaner looks)
     :return: the html-text containing the marks.
     """
 
@@ -36,6 +37,14 @@ def marked_text(text: str, markings: List[Tuple[int, int, str]]):
         if markings[i][1] > markings[i+1][0]:  # new mark starts before previous ends
             markings[i] = (markings[i][0], markings[i+1][1], markings[i][2])
     markings = [M for M in markings if M[0] < M[1]]  # filter out marks with len = 0
+    if unify:
+        i = 0
+        while i < len(markings)-1:  # using while instead of for-loop as the markings-list len is dynamic
+            if markings[i][1] == markings[i+1][0] and markings[i][2] == markings[i+1][2]:
+                markings[i] = (markings[i][0], markings[i+1][1], markings[i][2])
+                markings = markings[:i+1] + markings[i+2:]  # delete marking i+1 out of the list
+            else:
+                i += 1
 
     str_out = []
     writen_to = 0
@@ -107,8 +116,8 @@ if __name__ == "__main__":
         marker_index = list(scores.keys()).index(marker)
         markings = vals[marker_index][2]
 
-        t1 = marked_text(text1, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 0])
-        t2 = marked_text(text2, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 1])
+        t1 = marked_text(text1, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 0], unify=True)
+        t2 = marked_text(text2, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 1], unify=True)
 
         c1, c2 = st.columns((1, 5))
 
@@ -131,7 +140,7 @@ if __name__ == "__main__":
 
         st.session_state.text1 = t1
         st.session_state.text2 = t2
-        st.experimental_rerun()
+        st.rerun()
 
     if btn_load_prev:
         st.session_state.text_index -= 1
@@ -143,4 +152,4 @@ if __name__ == "__main__":
 
         st.session_state.text1 = t1
         st.session_state.text2 = t2
-        st.experimental_rerun()
+        st.rerun()
