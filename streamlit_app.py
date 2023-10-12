@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import streamlit as st
 import pandas as pd
 import nltk
@@ -17,6 +19,46 @@ scores = {
 }
 
 colours = ["#009900", "#990000", "#000099", "gold", "cornflowerblue", "lightseagreen", "mediumpurple"]
+
+
+def marked_text(text: str, markings: List[Tuple[int, int, str]]):
+    """
+    This function marks a Text with html notation.
+
+    :param text: The Text string that the marks get added to.
+    :param markings: A List of (start:int, end:int, colour:str)-Tuples indicating what should be marked.
+    :return: the html-text containing the marks.
+    """
+
+    markings = markings.copy() # ensure transparent List-Operations
+    markings.sort(key=lambda M: M[0])
+    for i in range(len(markings)-1):
+        if markings[i][1] > markings[i+1][0]:  # new mark starts before previous ends
+            markings[i] = (markings[i][0], markings[i+1][1], markings[i][2])
+    markings = [M for M in markings if M[0] < M[1]]  # filter out marks with len = 0
+
+    str_out = []
+    writen_to = 0
+
+    for M in markings:
+        start, end, colour = M
+        if writen_to < start:  # write unmarked text before th marking
+            str_out.append(text[writen_to: start])
+            writen_to = start
+
+        # start marking
+        str_out.append("<span style=\"border-radius: 5px; padding-left:1px; padding-right:1px; margin-right:3px; margin-left:3px; background-color: " + colour + "\">")
+
+        str_out.append(text[start: end])
+        writen_to = end
+
+        # end marking
+        str_out.append("</span>")
+
+    if writen_to < len(text):  # write unmarked text at the end
+        str_out.append(text[writen_to:])
+
+    return "".join(str_out)
 
 
 if __name__ == "__main__":
@@ -63,29 +105,10 @@ if __name__ == "__main__":
         n_values = [round(v[1], 3) for v in vals]
         df = pd.DataFrame({"Measure": names, "Value": values, "Normalized-Value": n_values})
         marker_index = list(scores.keys()).index(marker)
-        t1 = ""
-        t2 = ""
         markings = vals[marker_index][2]
 
-        for i, C in enumerate(text1):
-            starts = [c for ti, s, e, c in markings if ti == 0 and s == i]
-            if len(starts) > 0:
-                t1 += "<span style=\"border-radius: 5px; padding-left:1px; padding-right:1px; margin-right:3px; margin-left:3px; background-color: " + colours[starts[0]] + "\">"
-
-            t1 += C
-
-            if len([c for ti, s, e, c in markings if ti == 0 and e == i]) > 0:
-                t1 += "</span>"
-
-        for i, C in enumerate(text2):
-            starts = [c for ti, s, e, c in markings if ti == 1 and s == i]
-            if len(starts) > 0:
-                t2 += "<span style=\"border-radius: 5px; padding-left:1px; padding-right:1px; margin-right:3px; margin-left:3px; background-color: " + colours[starts[0]] + "\">"
-
-            if len([c for ti, s, e, c in markings if ti == 1 and e == i]) > 0:
-                t2 += "</span>"
-
-            t2 += C
+        t1 = marked_text(text1, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 0])
+        t2 = marked_text(text2, [(M[1], M[2], colours[M[3]]) for M in markings if M[0] == 1])
 
         c1, c2 = st.columns((1, 5))
 
