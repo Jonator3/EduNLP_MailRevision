@@ -17,7 +17,7 @@ def __run_alg(name, alg):
         if text1 == ":\n" or text2 == ":\n":  # == if one Text is empty
             out .append(None)
             continue
-        out.append(alg(text1, text2)[1])
+        out.append(alg(text1, text2)[0])
 
     out_df = pd.DataFrame({"id": ids, name: out})
     return out_df

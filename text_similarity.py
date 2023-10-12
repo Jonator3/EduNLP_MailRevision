@@ -17,36 +17,59 @@ def length_difference(text1, text2):
 
 
 def levenshtein_distance(token1, token2):
+
     distances = np.zeros((len(token1) + 1, len(token2) + 1))
+    pre_step = np.zeros((len(token1) + 1, len(token2) + 1))
+    diffs = {
+        0: (-1, -1, lambda x, y: []),
+        1: ( 0, -1, lambda x, y: [(1, y, y+1, 0)]),
+        2: (-1,  0, lambda x, y: [(0, x, x+1, 1)]),
+        3: (-1, -1, lambda x, y: [(0, x, x+1, 2), (1, y, y+1, 2)])
+    }
 
     for t1 in range(len(token1) + 1):
         distances[t1][0] = t1
-
+        pre_step[t1][0] = 2
     for t2 in range(len(token2) + 1):
         distances[0][t2] = t2
-
-    a = 0
-    b = 0
-    c = 0
+        pre_step[0][t2] = 1
+    pre_step[0][0] = -1
 
     for t1 in range(1, len(token1) + 1):
         for t2 in range(1, len(token2) + 1):
             if (token1[t1 - 1] == token2[t2 - 1]):
+                # no change
                 distances[t1][t2] = distances[t1 - 1][t2 - 1]
+                pre_step[t1][t2] = 0
             else:
-                a = distances[t1][t2 - 1]
-                b = distances[t1 - 1][t2]
-                c = distances[t1 - 1][t2 - 1]
+                add = distances[t1][t2 - 1]
+                remove = distances[t1 - 1][t2]
+                change = distances[t1 - 1][t2 - 1]
 
-                if (a <= b and a <= c):
-                    distances[t1][t2] = a + 1
-                elif (b <= a and b <= c):
-                    distances[t1][t2] = b + 1
+                if (add <= remove and add <= change):
+                    distances[t1][t2] = add + 1
+                    pre_step[t1][t2] = 1
+                elif (remove <= add and remove <= change):
+                    distances[t1][t2] = remove + 1
+                    pre_step[t1][t2] = 2
                 else:
-                    distances[t1][t2] = c + 1
+                    distances[t1][t2] = change + 1
+                    pre_step[t1][t2] = 3
 
     out = int(distances[len(token1)][len(token2)])
-    return out, out/max(len(token1), len(token2)), []
+    markings = []
+    x = len(token1)
+    y = len(token2)
+    while True:
+        map = diffs.get(int(pre_step[x][y]))
+        if map is None:
+            break
+        xoff, yoff, marker = map
+        x += xoff
+        y += yoff
+        markings += marker(x, y)
+
+    return out, out/max(len(token1), len(token2)), markings
 
 
 def token_levenshtein_distance(text1, text2, lemmatize=False):
@@ -145,38 +168,3 @@ def vector_cosine(text1, text2, lemmatize=False):
 
     return similarity[0][0], similarity[0][0], []
 
-
-def vectorize_with_bert(text):
-    # Load the BERT model and tokenizer
-    model_name = 'bert-base-uncased'  # Pre-trained BERT model name
-    tokenizer = BertTokenizer.from_pretrained(model_name)
-    model = BertModel.from_pretrained(model_name)
-
-    # Tokenize the input text
-    tokens = tokenizer.tokenize(text)
-    token_ids = tokenizer.convert_tokens_to_ids(tokens)
-
-    # Convert the token IDs to PyTorch tensors
-    input_ids = torch.tensor([token_ids])
-
-    # Set the model to evaluation mode
-    model.eval()
-
-    # Vectorize the input text using BERT
-    with torch.no_grad():
-        encoded_layers, _ = model(input_ids)
-
-    # Get the vector representation from the last BERT layer
-    vectorized_text = encoded_layers[-1].squeeze(0)
-
-    return vectorized_text
-
-
-def bert_vector_cosine(text1, text2):
-    vector1 = vectorize_with_bert(text1)
-    vector2 = vectorize_with_bert(text2)
-
-    # Calculate the cosine similarity
-    similarity = cosine_similarity(vector1, vector2)
-
-    return similarity[0][0], similarity[0][0], []
